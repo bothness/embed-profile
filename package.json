@@ -1,7 +1,7 @@
 {
   "name": "embed-profile",
   "version": "0.1.0",
-  "homepage": "http://bothness.github.io/embed-profiles",
+  "homepage": "http://bothness.github.io/embed-profile",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
