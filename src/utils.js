@@ -19,3 +19,7 @@ export function changeClass(val) {
 export function changeStr(val, suffix = '', decimals = 0) {
   return val != 0 ? Math.abs(val).toFixed(decimals) + suffix : suffix == 'pp' ? 'n/c' : 'no change';
 }
+
+export function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}

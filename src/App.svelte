@@ -1,5 +1,5 @@
 <script>
-	import { getData, suffixer, changeClass, changeStr } from "./utils";
+	import { getData, suffixer, changeClass, changeStr, sleep } from "./utils";
 	import { urls, types, codes } from "./config";
 	import SpineChart from "./charts/SpineChart.svelte";
 	import ColChart from "./charts/ColChart.svelte";
@@ -22,12 +22,12 @@
 				.then(quart => {
 					quartiles = quart;
 					place = json;
-					pymChild.sendHeight();
+					sendHeight();
 				});
 			} else {
 				quartiles = null;
 				place = json;
-				pymChild.sendHeight();
+				sendHeight();
 			}
 		});
 	}
@@ -60,7 +60,7 @@
 
 	function onResize() {
 		cols = w < 575 ? 1 : window.getComputedStyle(grid).getPropertyValue("grid-template-columns").split(" ").length;
-		pymChild.sendHeight();
+		sendHeight();
 	}
 	
 	getData(urls.options)
@@ -88,6 +88,11 @@
 				loadArea(selected.code);
 			}
 		}
+	}
+
+	async function sendHeight() {
+		await sleep(100);
+		pymChild.sendHeight();
 	}
 
 	$: w && onResize();
@@ -294,7 +299,7 @@
 		display: grid;
 		width: 100%;
 		grid-gap: 10px;
-		grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
 		justify-content: stretch;
 	}
 	#grid {
