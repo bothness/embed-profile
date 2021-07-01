@@ -1,4 +1,5 @@
 <script>
+	import html2canvas from "html2canvas";
 	import { getData, suffixer, changeClass, changeStr, sleep } from "./utils";
 	import { urls, types, codes } from "./config";
 	import SpineChart from "./charts/SpineChart.svelte";
@@ -95,8 +96,21 @@
 		pymChild.sendHeight();
 	}
 
+	function makePNG() {
+		html2canvas(document.getElementsByTagName('main')[0]).then(canvas => {
+			let a = document.createElement('a');
+    	a.href = canvas.toDataURL();
+    	a.download = place.name + '.png';
+    	a.click();
+		});
+	}
+
+	pymChild.onMessage('makePNG', makePNG);
+
 	$: w && onResize();
 </script>
+
+<main>
 
 {#if place && ew && selected}
 <div class="grid">
@@ -119,8 +133,8 @@
 <div class="grid mts">
 	<div class="text-small">
 		Comparison:
-		<button class="btn" class:btn-active={!overtime} on:click={() => overtime = false}>National figures</button>
-		<button class="btn" class:btn-active={overtime} on:click={() => overtime = true}>Change from 2001</button>
+		<button class="btn" class:btn-active={!overtime} on:click={() => {overtime = false; sendHeight();}}>National figures</button>
+		<button class="btn" class:btn-active={overtime} on:click={() => {overtime = true; sendHeight();}}>Change from 2001</button>
 	</div>
 </div>
 {/if}
@@ -183,10 +197,31 @@
 			<ColChart data="{place && makeData(['age10yr', 'perc', '2011'])}" zKey="{overtime ? 'prev' : place.type != 'ew' ? 'ew' : null}"/>
 		</div>
 		{#if !overtime && place.type != 'ew'}
-		<div class="text-small muted"><li class="line"></li> shows England & Wales profile</div>
+		<div class="text-small muted"><li class="line"></li> Shows England & Wales profile</div>
 		{:else if overtime}
-		<div class="text-small muted"><li class="line"></li> shows 2001 profile</div>
+		<div class="text-small muted"><li class="line"></li> Shows 2001 profile</div>
 		{/if}
+	</div>
+	{/if}
+	{#if comp == "sex"}
+	<div>
+		<span class="text-label">Sex</span><br/>
+		<StackedBarChart data="{place && makeData(['population', 'perc', '2011'])}" zKey="{overtime ? 'prev' : place.type != 'ew' ? 'ew' : null}"/>
+	</div>
+	{/if}
+	{#if comp == "health"}
+	<div>
+		<span class="text-label">General Health</span><br/>
+		<StackedBarChart data="{place && makeData(['health', 'perc', '2011'])}" zKey="{overtime ? null : place.type != 'ew' ? 'ew' : null}"/>
+		{#if overtime}
+		<div class="text-small muted">2001 figures not comparable</div>
+		{/if}
+	</div>
+	{/if}
+	{#if comp == "ethnicity"}
+	<div>
+		<span class="text-label">Ethnicity</span><br/>
+		<StackedBarChart data="{place && makeData(['ethnicity', 'perc', '2011'])}" zKey="{overtime ? 'prev' : place.type != 'ew' ? 'ew' : null}"/>
 	</div>
 	{/if}
 	{#if comp == "economic"}
@@ -201,12 +236,18 @@
 		<StackedBarChart data="{place && makeData(['travel', 'perc', '2011'])}" zKey="{overtime ? 'prev' : place.type != 'ew' ? 'ew' : null}"/>
 	</div>
 	{/if}
+	{#if comp == "tenure"}
+	<div>
+		<span class="text-label">Housing tenure</span><br/>
+		<StackedBarChart data="{place && makeData(['tenure', 'perc', '2011'])}" zKey="{overtime ? 'prev' : place.type != 'ew' ? 'ew' : null}"/>
+	</div>
+	{/if}
 	{/each}
 </div>
 
 <div class="grid mt">
 	<div>
-		<img src="https://onsvisual.github.io/svelte-scrolly/img/ons-logo-pos-en.svg" alt="Office for National Statistics"/>
+		<img src="./img/ons-logo-pos-en.svg" alt="Office for National Statistics"/>
 	</div>
 	<div class:text-right={cols > 1}>
 		<span class="text-small">Source: Census 2011, with change +/- from Census 2001</span>
@@ -214,13 +255,9 @@
 </div>
 {/if}
 
+</main>
+
 <style>
-	@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
-	:global(body) {
-		font-family: 'Open Sans', sans-serif;
-		margin: 0;
-		padding: 0;
-	}
 	img {
 		width: 200px;
 	}
