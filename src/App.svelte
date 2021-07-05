@@ -6,6 +6,7 @@
 	import ColChart from "./charts/ColChart.svelte";
 	import StackedBarChart from "./charts/StackedBarChart.svelte";
 	import Select from "./ui/Select.svelte";
+	import Warning from "./ui/Warning.svelte";
 	
 	let options, selected, place, ew, quartiles, w, cols;
 	let overtime = false;
@@ -66,9 +67,12 @@
 	
 	getData(urls.options)
 	.then(res => {
+		let lookup = {};
+		res.forEach(d => lookup[d.code] = d.name);
 		res.forEach(d => {
 			d.typepl = types[d.type].pl;
 			d.typenm = types[d.type].name;
+			d.typestr = lookup[d.parent] ? `${types[d.type].name} in ${lookup[d.parent]}` : '';
 		});
 		options = res.sort((a, b) => a.name.localeCompare(b.name));
 		loadEW();
@@ -113,6 +117,8 @@
 <main>
 
 {#if place && ew && selected}
+<Warning/>
+
 <div class="grid">
 	<div>
 		<span class="text-big">{place.name}</span><br/>
@@ -123,7 +129,7 @@
 	{#if select}
 	<div>
 		<div style="width: 260px;" class:float-right={cols > 1}>
-		<Select {options} bind:selected group="typenm" search={true} on:select="{() => { if (selected) { loadArea(selected.code) }}}"/>
+		<Select {options} bind:selected group="typestr" search={true} on:select="{() => { if (selected) { loadArea(selected.code) }}}"/>
 		</div>
 	</div>
 	{/if}
@@ -133,7 +139,7 @@
 <div class="grid mts">
 	<div class="text-small">
 		Comparison:
-		<button class="btn" class:btn-active={!overtime} on:click={() => {overtime = false; sendHeight();}}>National figures</button>
+		<button class="btn" class:btn-active={!overtime} on:click={() => {overtime = false; sendHeight();}}>England & Wales figures</button>
 		<button class="btn" class:btn-active={overtime} on:click={() => {overtime = true; sendHeight();}}>Change from 2001</button>
 	</div>
 </div>
@@ -170,13 +176,13 @@
 		</div>
 		{/if}
 		{#if place.data.density.value_rank}
-		<div class="text-small muted">{place.data.density.value_rank['2011'].all.toLocaleString()}{suffixer(place.data.density.value_rank['2011'].all)} densest of {place.count.toLocaleString()} {types[place.type].pl.toLowerCase()}</div>
+		<div class="text-small muted">{place.data.density.value_rank['2011'].all.toLocaleString()}{suffixer(place.data.density.value_rank['2011'].all)} most densely populated of {place.count.toLocaleString()} {types[place.type].pl.toLowerCase()}</div>
 		{/if}
 	</div>
 	{/if}
 	{#if comp == "agemed"}
 	<div>
-		<span class="text-label">Median Age</span>
+		<span class="text-label">Median age</span>
 		<br/>
 		<span class="text-big">{place.data.agemed.value['2011'].all}</span>
 		<span class="{changeClass(place.data.agemed.value['2011'].all - place.data.agemed.value['2001'].all)}">{changeStr(place.data.agemed.value['2011'].all - place.data.agemed.value['2001'].all, 'yrs')}</span>
@@ -250,7 +256,7 @@
 		<img src="./img/ons-logo-pos-en.svg" alt="Office for National Statistics"/>
 	</div>
 	<div class:text-right={cols > 1}>
-		<span class="text-small">Source: Census 2011, with change +/- from Census 2001</span>
+		<span class="text-small">Source: 2001 and 2011 Census</span>
 	</div>
 </div>
 {/if}
